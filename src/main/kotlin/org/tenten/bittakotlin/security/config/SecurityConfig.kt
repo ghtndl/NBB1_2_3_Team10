@@ -17,6 +17,7 @@ import org.springframework.security.web.authentication.logout.LogoutFilter
 import org.springframework.web.cors.CorsConfiguration
 import org.springframework.web.cors.CorsConfigurationSource
 import org.tenten.bittakotlin.member.repository.MemberRepository
+import org.tenten.bittakotlin.profile.service.ProfileService
 import org.tenten.bittakotlin.security.jwt.CustomLogoutFilter
 import org.tenten.bittakotlin.security.jwt.JWTUtil
 import org.tenten.bittakotlin.security.jwt.LoginFilter
@@ -27,7 +28,8 @@ import org.tenten.bittakotlin.security.repository.RefreshRepository
 class SecurityConfig(
     private val authenticationConfiguration: AuthenticationConfiguration,
     private val jwtUtil: JWTUtil,
-    private val refreshRepository: RefreshRepository
+    private val refreshRepository: RefreshRepository,
+    private val profileService: ProfileService
 ) {
 
     @Bean
@@ -102,8 +104,9 @@ class SecurityConfig(
 
         http.addFilterBefore(JWTFilter(jwtUtil), LoginFilter::class.java)
 
-        val loginFilter = LoginFilter(authenticationManager(), jwtUtil, refreshRepository)
+        val loginFilter = LoginFilter(authenticationManager(), jwtUtil, refreshRepository, profileService)
         loginFilter.setFilterProcessesUrl("/api/v1/member/login")
+
         http.addFilterAt(loginFilter, UsernamePasswordAuthenticationFilter::class.java)
 
         http.addFilterBefore(CustomLogoutFilter(jwtUtil, refreshRepository), LogoutFilter::class.java)
